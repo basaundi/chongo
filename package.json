@@ -1,0 +1,27 @@
+{
+  "name": "pongo",
+  "version": "0.0.0",
+  "description": "A mongo-like interface to localStorage",
+  "main": "index.js",
+  "devDependencies": {
+   "coffee-script": ">=1.6.2"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/basaundi/pongo.git"
+  },
+  "keywords": [
+    "pongo",
+    "mongo",
+    "coffeescript",
+    "localStorage",
+  ],
+  "author": "basaundi",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/basaundi/pongo/issues"
+  }
+}
