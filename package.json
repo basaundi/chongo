@@ -17,7 +17,7 @@
     "pongo",
     "mongo",
     "coffeescript",
-    "localStorage",
+    "localStorage"
   ],
   "author": "basaundi",
   "license": "MIT",

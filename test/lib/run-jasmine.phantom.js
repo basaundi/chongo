@@ -1,186 +1,86 @@
 var system = require('system');
 
-//
-// Wait until the test condition is true or a timeout occurs.
-//
-// If timeout but condition still falsy: exit(1)
-//
-
-var waitFor = (function () {
-
-    function getTime() {
-        return (new Date).getTime();
-    }
-
-    return function (test, doIt, duration) {
-        duration || (duration = 3000);
-
-        var start = getTime(),
-            finish = start + duration,
-            int;
-
-        function looop() {
-            var time = getTime(),
-                timeout = (time >= finish),
-                condition = test();
-
-            // No more time or condition fulfilled
-            if (condition) {
-                doIt(time - start);
-                clearInterval(int);
+/**
+ * Wait until the test condition is true or a timeout occurs. Useful for waiting
+ * on a server response or for a ui change (fadeIn, etc.) to occur.
+ *
+ * @param testFx javascript condition that evaluates to a boolean,
+ * it can be passed in as a string (e.g.: "1 == 1" or "$('#bar').is(':visible')" or
+ * as a callback function.
+ * @param onReady what to do when testFx condition is fulfilled,
+ * it can be passed in as a string (e.g.: "1 == 1" or "$('#bar').is(':visible')" or
+ * as a callback function.
+ * @param timeOutMillis the max amount of time to wait. If not specified, 3 sec is used.
+ */
+function waitFor(testFx, onReady, timeOutMillis) {
+    var maxtimeOutMillis = timeOutMillis ? timeOutMillis : 3001, //< Default Max Timeout is 3s
+        start = new Date().getTime(),
+        condition = false,
+        interval = setInterval(function() {
+            if ( (new Date().getTime() - start < maxtimeOutMillis) && !condition ) {
+                // If not time-out yet and condition not yet fulfilled
+                condition = (typeof(testFx) === "string" ? eval(testFx) : testFx()); //< defensive code
+            } else {
+                if(!condition) {
+                    // If condition still not fulfilled (timeout but condition is 'false')
+                    console.log("'waitFor()' timeout");
+                    phantom.exit(1);
+                } else {
+                    // Condition fulfilled (timeout and/or condition is 'true')
+                    console.log("'waitFor()' finished in " + (new Date().getTime() - start) + "ms.");
+                    typeof(onReady) === "string" ? eval(onReady) : onReady(); //< Do what it's supposed to do once the condition is fulfilled
+                    clearInterval(interval); //< Stop this interval
+                }
             }
+        }, 100); //< repeat check every 100ms
+};
 
-            // THEN, no moretime but condition unfulfilled
-            if (timeout && !condition) {
-                console.log("ERROR - Timeout for page condition.")
-                phantom.exit(1);
-            }
-        }
 
-        int = setInterval(looop, 1000 / 60);
-    };
-}());
-
-if (system.args.length < 2 || system.args.length > 3) {
-    console.log('Usage: run-jasmine.phantom.js URL [formatter]');
+if (system.args.length !== 2) {
+    console.log('Usage: run-jasmine.js URL');
     phantom.exit(1);
 }
 
 var page = require('webpage').create();
 
-// print console.log output from the webpage
-page.onConsoleMessage = function(msg, lineNum, sourceId) {
-    //console.log(msg);
+// Route "console.log()" calls from within the Page context to the main Phantom context (i.e. current "this")
+page.onConsoleMessage = function(msg) {
+    console.log(msg);
 };
 
-// page callback, kind of a hackish way to only allow our phantom 
-// script to make use of console.log so we only see test results.
-page.onCallback = function(msg) {
-    console.log(msg);
-}
-
-page.open(system.args[1], function (status) {
+page.open(system.args[1], function(status){
     if (status !== "success") {
-        console.log("Cannot open URL");
-        phantom.exit(1);
-    }
-
-    waitFor(function () {
-        return page.evaluate(function () {
-            return document.body.querySelector(".duration");
+        console.log("Unable to access network");
+        phantom.exit();
+    } else {
+        waitFor(function(){
+            return page.evaluate(function(){
+                return document.body.querySelector('.symbolSummary .pending') === null
+            });
+        }, function(){
+            var exitCode = page.evaluate(function(){
+                console.log('');
+                console.log(document.body.querySelector('.description').innerText);
+                var list = document.body.querySelectorAll('.results > #details > .specDetail.failed');
+                if (list && list.length > 0) {
+                  console.log('');
+                  console.log(list.length + ' test(s) FAILED:');
+                  for (i = 0; i < list.length; ++i) {
+                      var el = list[i],
+                          desc = el.querySelector('.description'),
+                          msg = el.querySelector('.resultMessage.fail');
+                      console.log('');
+                      console.log(desc.innerText);
+                      console.log(msg.innerText);
+                      console.log('');
+                  }
+                  return 1;
+                } else {
+                  console.log(document.body.querySelector('.alert > .passingAlert.bar').innerText);
+                  return 0;
+                }
+            });
+            phantom.exit(exitCode);
         });
-    }, function (t) {
-        var passed;
-        passed = page.evaluate(function (formatter) {
-
-            var formatColors = (function () {
-                function indent(level) {
-                    var ret = '';
-                    for (var i = 0; i < level; i += 1) {
-                        ret = ret + '  ';
-                    }
-                    return ret;
-                }
-
-                function tick(el) {
-                    return $(el).is('.passed') ? '\033[32m✓\033[0m' : '\033[31m✖';
-                }
-
-                function desc(el, strong) {
-                    strong || (strong = false);
-
-                    var ret;
-                    ret = $(el).find('> .description').text();
-                    if (strong) {
-                        ret = '\033[1m' + ret;
-                    }
-
-                    return ret;
-                }
-
-                return function (el, level, strong) {
-                    if (typeof el == 'number') {
-                        var results= "-------------------------------------\n";
-                        results += "\033[32m✓\033[0m\033[1m Passed: \033[0m" + el;
-                        if (level > 0) {
-                          results += "\n\033[31m✖ \033[0m\033[1mFailed: \033[0m" + level;
-                        }
-                        return results
-                    } else {
-                      return '\033[1m' + indent(level) + tick(el) + ' ' + desc(el, strong);
-                    }
-                };
-            }());
-
-            var errorsOnly = (function () {
-                function indent(level) {
-                    var ret = '';
-                    for (var i = 0; i < level; i += 1) {
-                        ret = ret + '  ';
-                    }
-                    return ret;
-                }
-
-                function desc(el) {
-                    return $(el).find('> .description').text();
-                }
-
-                function tick(el) {
-                    return $(el).is('.passed') ? '✓ ' : '✖ ';
-                }
-
-
-                return function (el, level, strong) {
-                    if (typeof el == 'number') {
-                      return "Passed: " + el + ", Failed: " + level;
-                    } else {
-                      if (!$(el).is(".passed")) {
-                        return indent(level) + tick(el) + desc(el);
-                      } else {
-                        return ""
-                      }
-                    }
-                };
-            }());
-
-            // ability to request different type of outputs, default to formatColors
-            try {
-              format = eval(formatter || "formatColors")
-            } catch(ex) {
-              format = formatColors
-            }
-
-            function printSuites(root, level) {
-                level || (level = 0);
-                $(root).find('div.suite').each(function (i, el) {
-                    var output = "\n" + format(el, level, true)
-                    if (output && $(el).parents('div.suite').length == level) {
-                      window.callPhantom(output);
-                      printSpecs(el, level + 1);
-                    }
-                    printSuites(el, level + 1);
-                });
-            }
-
-            function printSpecs(root, level) {
-                level || (level = 0);
-                $(root).find('> .specSummary').each(function (i, el) {
-                    var output = format(el, level);
-                    if (output) {
-                      window.callPhantom(output);
-                    }
-                });
-            }
-
-            printSuites($('div.jasmine_reporter'));
-
-            // handle fails
-            var fails  = document.body.querySelectorAll('div.jasmine_reporter div.specSummary.failed');
-            var passed = document.body.querySelectorAll('div.jasmine_reporter div.specSummary.passed');
-            window.callPhantom(format(passed.length, fails.length));
-            return fails.length === 0;
-        }, system.args.length === 3 ? system.args[2] : undefined);
-
-        phantom.exit(passed ? 0 : 1);
-    });
+    }
 });
