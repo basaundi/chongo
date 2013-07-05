@@ -35,11 +35,13 @@
           {
             'username': 'root',
             'password': 'toor',
-            'super': true
+            'super': true,
+            'uid': 0
           }, {
             'username': 'bill',
             'password': '1234',
-            'shell': 'bash'
+            'shell': 'bash',
+            'uid': 1004
           }, {
             'foo': -9
           }
@@ -48,7 +50,7 @@
           sessionStorage.clear();
           return col = db.col('mycol');
         });
-        return it("can do basic CRUD operations", function() {
+        it("can do basic CRUD operations", function() {
           var cur;
           expect(col).toBeDefined();
           expect(col.count()).toEqual(0);
@@ -68,7 +70,136 @@
           col.remove({});
           return expect(col.count()).toEqual(0);
         });
+        it("can do batch insert", function() {
+          var cur;
+          col.insert(docs);
+          expect(col.count()).toEqual(3);
+          cur = col.find();
+          expect(cur.next().username).toEqual('root');
+          return expect(cur.next().shell).toEqual('bash');
+        });
+        return it("can query", function() {
+          var cur;
+          col.insert(docs);
+          cur = col.find({
+            username: 'bill'
+          });
+          expect(cur.next().shell).toEqual('bash');
+          cur = col.find({
+            uid: {
+              $gt: 100
+            }
+          });
+          return expect(cur.next().uid).toEqual(1004);
+        });
       });
+    });
+  });
+
+  describe("Query", function() {
+    var a, b, c;
+    a = b = c = null;
+    beforeEach(function() {
+      a = {
+        'x': 'y',
+        'foo': 9,
+        'bar': "xxx",
+        'ding': [2, 4, 8],
+        'dong': -10,
+        'bang': {
+          'foo': 8
+        }
+      };
+      b = {
+        'x': 'y',
+        'foo': 0,
+        'bar': "yyy",
+        'ding': [1, 3, 5, 7],
+        'bang': {
+          'foo': 0,
+          'lst': [1, 2, 3]
+        }
+      };
+      return c = {
+        'x': 'y',
+        'foo': 1,
+        'bar': "zzzz",
+        'ding': [1, 3, 5, 7],
+        'bang': {
+          'foo': 8,
+          'lst': [1, 2, 3]
+        }
+      };
+    });
+    it("empty", function() {
+      var m;
+      m = Pongo.Query({});
+      expect(m(a)).toBe(true);
+      expect(m(b)).toBe(true);
+      expect(m(c)).toBe(true);
+      m = Pongo.Query();
+      expect(m(a)).toBe(true);
+      expect(m(b)).toBe(true);
+      return expect(m(c)).toBe(true);
+    });
+    it("scalar equality", function() {
+      var m;
+      m = Pongo.Query({
+        'foo': 9
+      });
+      expect(m(a)).toBe(true);
+      expect(m(b)).toBe(false);
+      return expect(m(b)).toBe(false);
+    });
+    it("perform compound queries", function() {
+      var m;
+      m = Pongo.Query({
+        'x': 'y',
+        'foo': 0
+      });
+      expect(m(a)).toBe(false);
+      expect(m(b)).toBe(true);
+      return expect(m(c)).toBe(false);
+    });
+    it("in lists", function() {
+      var m;
+      m = Pongo.Query({
+        'ding': 4
+      });
+      expect(m(a)).toBe(true);
+      expect(m(b)).toBe(false);
+      return expect(m(c)).toBe(false);
+    });
+    it("documents", function() {
+      var m;
+      m = Pongo.Query({
+        'bang': {
+          'foo': 8
+        }
+      });
+      expect(m(a)).toBe(true);
+      expect(m(b)).toBe(false);
+      return expect(m(c)).toBe(false);
+    });
+    it("in nested documents", function() {
+      var m;
+      m = Pongo.Query({
+        'bang.foo': 8
+      });
+      expect(m(a)).toBe(true);
+      expect(m(b)).toBe(false);
+      return expect(m(c)).toBe(true);
+    });
+    return it("works with $in operator", function() {
+      var m;
+      m = Pongo.Query({
+        'bar': {
+          '$in': ['xxx', 'zzzz']
+        }
+      });
+      expect(m(a)).toBe(true);
+      expect(m(b)).toBe(false);
+      return expect(m(c)).toBe(true);
     });
   });
 

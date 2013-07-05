@@ -16,10 +16,13 @@ class Document extends Namespace
     @load() unless @data?
 
 class Collection extends Namespace
-  find: () ->
-    new Cursor(@, @data.sub)
+  find: (query) ->
+    new Cursor(@, @data.sub, query)
 
   insert: (doc) ->
+    if Array.isArray(doc)
+      @insert(d) for d in doc
+      return
     doc._id = new ObjectId() unless doc._id?
     doc = new Document(@, new ObjectId(), doc)
     doc.store()
@@ -75,5 +78,6 @@ Pongo = @Pongo =
   'Connection': Connection
   'Database': Database
   'Collection': Collection
+  'Query': Query
 
 module?.exports = Pongo
