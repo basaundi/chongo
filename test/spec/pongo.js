@@ -111,8 +111,8 @@
   });
 
   describe("Query", function() {
-    var a, b, c;
-    a = b = c = null;
+    var a, b, c, d, e;
+    a = b = c = d = e = null;
     beforeEach(function() {
       a = {
         'x': 'y',
@@ -134,7 +134,7 @@
           'lst': [1, 2, 3]
         }
       };
-      return c = {
+      c = {
         'x': 'y',
         'foo': 1,
         'bar': "zzzz",
@@ -143,6 +143,16 @@
           'foo': 8,
           'lst': [1, 2, 3]
         }
+      };
+      d = {
+        'type': 'food',
+        qty: 354,
+        price: 5.95
+      };
+      return e = {
+        'type': 'food',
+        qty: 254,
+        price: 10.32
       };
     });
     it("empty", function() {
@@ -210,7 +220,7 @@
       expect(m(b)).toBe(false);
       return expect(m(c)).toBe(true);
     });
-    return it("works with $in operator", function() {
+    it("works with $in operator", function() {
       var m;
       m = Pongo.Query({
         'bar': {
@@ -220,6 +230,43 @@
       expect(m(a)).toBe(true);
       expect(m(b)).toBe(false);
       return expect(m(c)).toBe(true);
+    });
+    it("works with $or operator", function() {
+      var m;
+      m = Pongo.Query({
+        '$or': [
+          {
+            'bar': 'xxx'
+          }, {
+            'bar': 'zzzz'
+          }
+        ]
+      });
+      expect(m(a)).toBe(true);
+      expect(m(b)).toBe(false);
+      return expect(m(c)).toBe(true);
+    });
+    return it("works with comlex queries", function() {
+      var m;
+      m = Pongo.Query({
+        type: 'food',
+        $or: [
+          {
+            qty: {
+              $gt: 100
+            }
+          }, {
+            price: {
+              $lt: 9.95
+            }
+          }
+        ]
+      });
+      expect(m(a)).toBe(false);
+      expect(m(b)).toBe(false);
+      expect(m(c)).toBe(false);
+      expect(m(d)).toBe(true);
+      return expect(m(e)).toBe(false);
     });
   });
 

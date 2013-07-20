@@ -82,7 +82,7 @@ describe "Connection", ->
         expect(o._id.length).toEqual(24)
 
 describe "Query", ->
-  a = b = c = null
+  a = b = c = d = e = null
   beforeEach () ->
     a = {'x': 'y', 'foo': 9, 'bar': "xxx", 'ding': [2,4,8],\
              'dong': -10, 'bang': {'foo': 8}}
@@ -90,6 +90,8 @@ describe "Query", ->
              'bang': {'foo': 0, 'lst': [1,2,3]}}
     c = {'x': 'y', 'foo': 1, 'bar': "zzzz", 'ding': [1,3,5,7],\
              'bang': {'foo': 8, 'lst': [1,2,3]}}
+    d = {'type': 'food', qty: 354, price: 5.95}
+    e = {'type': 'food', qty: 254, price: 10.32}
 
   it "empty", ->
     m = Pongo.Query({})
@@ -141,3 +143,17 @@ describe "Query", ->
     expect(m(b)).toBe(false)
     expect(m(c)).toBe(true)
 
+  it "works with $or operator", ->
+    m = Pongo.Query('$or': [{'bar': 'xxx'},{'bar': 'zzzz'}])
+    expect(m(a)).toBe(true)
+    expect(m(b)).toBe(false)
+    expect(m(c)).toBe(true)
+
+  it "works with comlex queries", ->
+    m = Pongo.Query({ type: 'food', $or: [{ qty:   { $gt: 100  }},
+                                          { price: { $lt: 9.95 }}]})
+    expect(m(a)).toBe(false)
+    expect(m(b)).toBe(false)
+    expect(m(c)).toBe(false)
+    expect(m(d)).toBe(true)
+    expect(m(e)).toBe(false)
