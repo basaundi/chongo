@@ -156,4 +156,11 @@ describe "Query", ->
     expect(m(b)).toBe(false)
     expect(m(c)).toBe(false)
     expect(m(d)).toBe(true)
+    expect(m(e)).toBe(true)
+    m = Pongo.Query({ type: 'food', $and: [{ qty:   { $gt: 100  }},
+                                          { price: { $lt: 9.95 }}]})
+    expect(m(a)).toBe(false)
+    expect(m(b)).toBe(false)
+    expect(m(c)).toBe(false)
+    expect(m(d)).toBe(true)
     expect(m(e)).toBe(false)
