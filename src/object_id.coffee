@@ -2,12 +2,12 @@ class ObjectId
   @inc: ~~(Math.random() * 0xFFFFFF)
   @hostname: @inc
   @pid: ~~(Math.random() * 0xFFFFFF)
-  @getInc: () ->
+  @getInc: ->
     v = @inc
     @inc = (@inc + 1) % 0xFFFFFF
     v
 
-  constructor: (hex=null)->
+  constructor: (hex=null) ->
     if hex?
       @v = hex
     else
@@ -20,8 +20,9 @@ class ObjectId
     v += @_pad("000000", @getInc())
     v
 
-  toString: -> 'ObjectId("' + @v +'")'
+  toString: -> 'ObjectId("#{@v}")'
   valueOf: -> @v
+
   @_pad: (f,v) ->
     t = v.toString(16)
     (f+t).substring(t.length)

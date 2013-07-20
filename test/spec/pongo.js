@@ -78,7 +78,7 @@
           expect(cur.next().username).toEqual('root');
           return expect(cur.next().shell).toEqual('bash');
         });
-        return it("can query", function() {
+        it("can query", function() {
           var cur;
           col.insert(docs);
           cur = col.find({
@@ -91,6 +91,20 @@
             }
           });
           return expect(cur.next().uid).toEqual(1004);
+        });
+        it("can load array", function() {
+          var arr, cur;
+          col.insert(docs);
+          cur = col.find();
+          arr = cur.toArray();
+          return expect(arr.length).toEqual(3);
+        });
+        return it("stores _id properly", function() {
+          var o;
+          col.insert(docs);
+          o = col.find().next();
+          expect(typeof o._id).toEqual("string");
+          return expect(o._id.length).toEqual(24);
         });
       });
     });
@@ -161,14 +175,20 @@
       expect(m(b)).toBe(true);
       return expect(m(c)).toBe(false);
     });
-    it("in lists", function() {
+    it("in arrays", function() {
       var m;
       m = Pongo.Query({
         'ding': 4
       });
       expect(m(a)).toBe(true);
       expect(m(b)).toBe(false);
-      return expect(m(c)).toBe(false);
+      expect(m(c)).toBe(false);
+      m = Pongo.Query({
+        'ding.1': 3
+      });
+      expect(m(a)).toBe(false);
+      expect(m(b)).toBe(true);
+      return expect(m(c)).toBe(true);
     });
     it("documents", function() {
       var m;

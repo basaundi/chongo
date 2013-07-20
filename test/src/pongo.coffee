@@ -68,7 +68,19 @@ describe "Connection", ->
         expect(cur.next().shell).toEqual('bash')
         cur = col.find(uid:{$gt: 100})
         expect(cur.next().uid).toEqual(1004)
-        
+
+      it "can load array", ->
+        col.insert(docs)
+        cur = col.find()
+        arr = cur.toArray()
+        expect(arr.length).toEqual(3)
+
+      it "stores _id properly", ->
+        col.insert(docs)
+        o = col.find().next()
+        expect(typeof o._id).toEqual("string")
+        expect(o._id.length).toEqual(24)
+
 describe "Query", ->
   a = b = c = null
   beforeEach () ->
@@ -88,40 +100,44 @@ describe "Query", ->
     expect(m(a)).toBe(true)
     expect(m(b)).toBe(true)
     expect(m(c)).toBe(true)
-    
+
   it "scalar equality", ->
     m = Pongo.Query('foo': 9)
     expect(m(a)).toBe(true)
     expect(m(b)).toBe(false)
     expect(m(b)).toBe(false)
-    
+
   it "perform compound queries", ->
     m = Pongo.Query('x': 'y', 'foo': 0)
     expect(m(a)).toBe(false)
     expect(m(b)).toBe(true)
     expect(m(c)).toBe(false)
-    
-  it "in lists", ->
+
+  it "in arrays", ->
     m = Pongo.Query('ding': 4)
     expect(m(a)).toBe(true)
     expect(m(b)).toBe(false)
     expect(m(c)).toBe(false)
-    
+    m = Pongo.Query('ding.1': 3)
+    expect(m(a)).toBe(false)
+    expect(m(b)).toBe(true)
+    expect(m(c)).toBe(true)
+
   it "documents", ->
     m = Pongo.Query('bang': {'foo': 8})
     expect(m(a)).toBe(true)
     expect(m(b)).toBe(false)
     expect(m(c)).toBe(false)
-    
+
   it "in nested documents", ->
     m = Pongo.Query('bang.foo': 8)
     expect(m(a)).toBe(true)
     expect(m(b)).toBe(false)
     expect(m(c)).toBe(true)
-    
+
   it "works with $in operator", ->
     m = Pongo.Query('bar': {'$in': ['xxx', 'zzzz']})
     expect(m(a)).toBe(true)
     expect(m(b)).toBe(false)
     expect(m(c)).toBe(true)
-    
+

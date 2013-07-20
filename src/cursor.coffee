@@ -80,3 +80,9 @@ class Cursor
     doc = @doc.data
     @doc = null
     doc
+
+  toArray: ->
+    a = []
+    a.push(@next()) while @hasNext()
+    a
+
