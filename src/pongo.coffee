@@ -23,6 +23,8 @@ class Collection extends Namespace
     cur = new Cursor(@, @data.sub, query)
     cur.next()
 
+  count: (query) -> @find(query).count()
+
   insert: (doc) ->
     if Array.isArray(doc)
       res = @insert(d) for d in doc

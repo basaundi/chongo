@@ -52,3 +52,9 @@ class Cursor
     a.push(@next()) while @hasNext()
     a
 
+  count: ->
+    n = 0
+    while @hasNext()
+      n++
+      @next()
+    n
