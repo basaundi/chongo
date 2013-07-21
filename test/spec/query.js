@@ -63,7 +63,7 @@
       });
       expect(m(a)).toBe(true);
       expect(m(b)).toBe(false);
-      return expect(m(b)).toBe(false);
+      return expect(m(c)).toBe(false);
     });
     it("with regex", function() {
       var m;
