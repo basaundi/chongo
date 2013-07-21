@@ -19,6 +19,10 @@ class Collection extends Namespace
   find: (query) ->
     new Cursor(@, @data.sub, query)
 
+  findOne: (query) ->
+    cur = new Cursor(@, @data.sub, query)
+    cur.next()
+
   insert: (doc) ->
     if Array.isArray(doc)
       res = @insert(d) for d in doc
