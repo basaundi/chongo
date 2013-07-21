@@ -1,10 +1,7 @@
 
+s1 = {}
 s2 =
   # [comparison]
-  $all: (v,q) -> # Matches arrays that contain all elements specified in the query.
-    for x in v
-      return false if x not in q
-    true
   $gt:  (v,q) -> v >  q # Matches values that are greater than the value specified in the query.
   $gte: (v,q) -> v >= q # Matches values that are equal to or greater than the value specified in the query.
   $in:  (v,q) -> v in q # Matches any of the values that exist in an array specified in the query.
@@ -12,33 +9,39 @@ s2 =
   $lte: (v,q) -> v <= q # Matches values that are less than or equal to the value specified in the query.
   $ne:  (v,q) -> v != q # Matches all values that are not equal to the value specified in the query.
   $nin: (v,q) -> v not in q # Matches values that do not exist in an array specified to the query.
-  $m:   (v,q) ->
+  $all: (v,q) -> # Matches arrays that contain all elements specified in the query.
+    for x in v
+      return false if x not in q
+    true
+
+  # [element]
+  $exists: (v,q) -> v? == q # Matches documents that have the specified field.
+  $mod: (v,q) -> (v % q[0]) == q[1]# Performs a modulo operation on the value of a field and selects documents with a specified result.
+  #TODO: $type: () # Selects documents if a field is of the specified type.
+
+  # [array]
+  $size: (v,q) -> v.length == q # Selects documents if the array field is a specified size.
+  $elemMatch: (v,q) -> # Selects documents if element in the array field matches all the specified $elemMatch condition.
+    for x in v
+      return true if s1.$m(x,q)
+    false
+
+  $m: (v,q) ->
     for op, qv of q
       return false unless @[op](v,qv)
     return true
 
-###
-  # [element]
-  $exists: # Matches documents that have the specified field.
-  $mod: # Performs a modulo operation on the value of a field and selects documents with a specified result.
-  $type: # Selects documents if a field is of the specified type.
-
   # [javascript]
-  $where: # Matches documents that satisfy a JavaScript expression.
-  $regex: # Selects documents where values match a specified regular expression.
+  # TODO: $where: # Matches documents that satisfy a JavaScript expression.
+  # TODO: $regex: # Selects documents where values match a specified regular expression.
 
   # [geospatial]
-  $geoWithin: # Selects geometries within a bounding GeoJSON geometry.
-  $geoIntersects: # Selects geometries that intersect with a GeoJSON geometry.
-  $near: # Returns geospatial objects in proximity to a point.
-  $nearSphere: # Returns geospatial objects in proximity to a point on a sphere.
+  # TODO: $geoWithin: # Selects geometries within a bounding GeoJSON geometry.
+  # TODO: $geoIntersects: # Selects geometries that intersect with a GeoJSON geometry.
+  # TODO: $near: # Returns geospatial objects in proximity to a point.
+  # TODO: $nearSphere: # Returns geospatial objects in proximity to a point on a sphere.
 
-  # [array]
-  $elemMatch: # Selects documents if element in the array field matches all the specified $elemMatch condition.
-  $size: # Selects documents if the array field is a specified size.
-###
-
-s1 =
+s1[k] = v for k,v of {
   # [logical]
   $or:  (v,q) -> # Joins query clauses with a logical OR returns all documents that match the conditions of either clause.
     for xq in q
@@ -62,7 +65,9 @@ s1 =
         x = d
         for s in k.split('.')
           x = x[s] if x?
-        if v instanceof Object
+        if v instanceof RegExp
+          m = v.test(x)
+        else if v instanceof Object
           if Object.keys(v)[0][0] == '$'
             m = s2.$m(x, v)
           else
@@ -73,6 +78,7 @@ s1 =
           m = (x == v)
       return false unless m
     true
+}
 
 Query = (q) ->
   (d) -> s1.$m(d,q)
