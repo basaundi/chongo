@@ -35,6 +35,7 @@ class Collection extends Namespace
   update: (spec, new_doc) ->
     cur = @find(spec)
     doc = cur.fetch()
+    # TODO: partial update?
     new_doc._id = doc._id
     doc.data = new_doc
     doc.store()
