@@ -65,6 +65,15 @@
       expect(m(b)).toBe(false);
       return expect(m(b)).toBe(false);
     });
+    it("with regex", function() {
+      var m;
+      m = Pongo.Query({
+        'bar': /^z+$/
+      });
+      expect(m(a)).toBe(false);
+      expect(m(b)).toBe(false);
+      return expect(m(c)).toBe(true);
+    });
     it("perform compound queries", function() {
       var m;
       m = Pongo.Query({

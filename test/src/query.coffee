@@ -27,6 +27,12 @@ describe "Query", ->
     expect(m(b)).toBe(false)
     expect(m(b)).toBe(false)
 
+  it "with regex", ->
+    m = Pongo.Query('bar': /^z+$/)
+    expect(m(a)).toBe(false)
+    expect(m(b)).toBe(false)
+    expect(m(c)).toBe(true)
+
   it "perform compound queries", ->
     m = Pongo.Query('x': 'y', 'foo': 0)
     expect(m(a)).toBe(false)
