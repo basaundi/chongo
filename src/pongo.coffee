@@ -21,8 +21,8 @@ class Collection extends Namespace
 
   insert: (doc) ->
     if Array.isArray(doc)
-      @insert(d) for d in doc
-      return
+      res = @insert(d) for d in doc
+      return res
     doc._id = new ObjectId().valueOf() unless doc._id?
     doc = new Document(@, doc._id, doc)
     doc.store()
@@ -30,6 +30,7 @@ class Collection extends Namespace
     # TODO: ensure order
     # TODO: insert in other indexes
     @store()
+    doc._id
 
   update: (spec, new_doc) ->
     cur = @find(spec)
@@ -39,7 +40,7 @@ class Collection extends Namespace
     doc.store()
     # TODO: POP from all indexes and reinsert
     # TODO: Do not re-store if indexes where not modified
-    @store
+    @store()
 
   remove: (spec) ->
     cur = @find(spec)
@@ -47,7 +48,7 @@ class Collection extends Namespace
       # TODO: POP from all indexes
       doc = cur.pop()
       doc.destroy()
-    @store
+    @store()
 
   count: -> @data.sub.length
 
