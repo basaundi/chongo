@@ -38,13 +38,15 @@ class Collection extends Namespace
     @store()
     doc._id
 
-  update: (spec, new_doc) ->
+  update: (spec, new_doc, options = null) ->
     cur = @find(spec)
-    doc = cur.fetch()
-    # TODO: partial update?
-    new_doc._id = doc._id
-    doc.data = new_doc
-    doc.store()
+    if options? && options.multi
+      while cur.hasNext()
+        cur.update(new_doc)
+        cur.fetch()
+    else
+      cur.fetch()
+      cur.update(new_doc)
     # TODO: POP from all indexes and reinsert
     # TODO: Do not re-store if indexes where not modified
     @store()
@@ -87,6 +89,7 @@ Pongo = @Pongo =
   'Connection': Connection
   'Database': Database
   'Collection': Collection
+  'Update': Update
   'Query': Query
 
 module?.exports = Pongo

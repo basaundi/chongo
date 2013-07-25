@@ -58,3 +58,16 @@ class Cursor
       n++
       @next()
     n
+
+  update: (update) ->
+    throw TypeError() unless @doc?
+    oid = @doc._id
+    ks = Object.keys(update)
+    if ks[0]? && ks[0][0] != '$'
+      @doc.data = {}
+      @doc.data[k] = v for k, v of update
+    else
+      for k, v of update
+        Update(k, v, @doc.data)
+    @doc.data._id = oid
+    @doc.store()

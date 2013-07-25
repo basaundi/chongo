@@ -82,3 +82,14 @@ s1[k] = v for k,v of {
 
 Query = (q) ->
   (d) -> s1.$m(d,q)
+
+u1 =
+  $set: (upd, old) -> upd
+
+Update = (op, update, data) ->
+  for k, v of update
+    x = data
+    for s in k.split('.')
+      du = x
+      x = x[s] if x?
+    du[s] = u1[op](v, x)
