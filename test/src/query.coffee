@@ -1,4 +1,28 @@
 
+describe "Update", ->
+  a = b = c = d = e = null
+  beforeEach () ->
+    a = {'x': 'y', 'foo': 9, 'bar': "xxx", 'ding': [2,4,8],\
+             'dong': -10, 'bang': {'foo': 8}}
+    b = {'x': 'y', 'foo': 0, 'bar': "yyy", 'ding': [1,3,5,7],\
+             'bang': {'foo': 0, 'lst': [1,2,3]}}
+    c = {'x': 'y', 'foo': 1, 'bar': "zzzz", 'ding': [1,3,5,7],\
+             'bang': {'foo': 8, 'lst': [1,2,3]}}
+    d = {'type': 'food', qty: 354, price: 5.95}
+    e = {'type': 'food', qty: 254, price: 10.32}
+
+  it "$set s elements", ->
+    Pongo.Update('$set', {'foo': 'z'}, a)
+    Pongo.Update('$set', {'foo': 'z'}, b)
+    Pongo.Update('$set', {'foo': 'z'}, c)
+    Pongo.Update('$set', {'foo': 'z'}, d)
+    Pongo.Update('$set', {'foo': 'z'}, e)
+    expect(a.foo).toEqual('z')
+    expect(b.foo).toEqual('z')
+    expect(c.foo).toEqual('z')
+    expect(d.foo).toEqual('z')
+    expect(e.foo).toEqual('z')
+
 describe "Query", ->
   a = b = c = d = e = null
   beforeEach () ->

@@ -55,6 +55,19 @@ describe "Connection", ->
         col.remove({})
         expect(col.count()).toEqual(0)
 
+      it "performs partial updates", ->
+        col.insert(docs)
+        col.update({}, {$set:{foo:10}})
+        cur = col.find()
+        expect(cur.next().foo).toEqual(10)
+        expect(cur.next().foo).toBeUndefined()
+        expect(cur.next().foo).toEqual(-9)
+        col.update({}, {$set:{foo:10}}, {multi: true})
+        cur = col.find()
+        expect(cur.next().foo).toEqual(10)
+        expect(cur.next().foo).toEqual(10)
+        expect(cur.next().foo).toEqual(10)
+
       it "can do batch insert", ->
         col.insert(docs)
         expect(col.count()).toEqual(3)
