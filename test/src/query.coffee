@@ -97,7 +97,7 @@ describe "Query", ->
     expect(m(b)).toBe(false)
     expect(m(c)).toBe(true)
 
-  it "works with comlex queries", ->
+  it "works with complex queries", ->
     m = Pongo.Query({ type: 'food', $or: [{ qty:   { $gt: 100  }},
                                           { price: { $lt: 9.95 }}]})
     expect(m(a)).toBe(false)

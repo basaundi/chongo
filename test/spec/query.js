@@ -214,7 +214,7 @@
       expect(m(b)).toBe(false);
       return expect(m(c)).toBe(true);
     });
-    return it("works with comlex queries", function() {
+    return it("works with complex queries", function() {
       var m;
       m = Pongo.Query({
         type: 'food',
