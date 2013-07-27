@@ -90,6 +90,7 @@ Pongo = @Pongo =
   'Database': Database
   'Collection': Collection
   'Update': Update
+  'Compare': Compare
   'Query': Query
 
 module?.exports = Pongo

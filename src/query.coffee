@@ -130,12 +130,61 @@ s1[k] = v for k,v of {
 Query = (q) ->
   (d) -> s1.$m(d,q)
 
+type_order = (x) ->
+  # TODO: Handle Datetime and BinData
+  to = typeof x
+  return 2 if x == null
+  return 3 if to == 'number'
+  return 4 if to == 'string'
+  return 9 if to == 'boolean'
+  return 8 if x instanceof ObjectId
+  return 11 if x instanceof RegExp
+  return 6 if x instanceof Array
+  return 5 # if x instanceof Object
+
+zero = -> 0
+
+simple_cmp = (a, b) ->
+    return -1 if a < b
+    return  1 if a > b
+    0
+
+deep_cmp = (a, b) ->
+    simple_cmp(JSON.stringify(a), JSON.stringify(b))
+
+# Compare two variables of the same type
+cmp_type = [
+  null,
+  zero,        # 1  MinKey (internal type)
+  zero,        # 2  null
+  simple_cmp,  # 3  Number
+  simple_cmp,  # 4  String
+  deep_cmp,    # 5  Object
+  deep_cmp,    # 6  Array
+  simple_cmp,  # 7  BinData
+  simple_cmp,  # 8  ObjectId
+  simple_cmp,  # 9  Boolean
+  simple_cmp,  # 10 Date
+  simple_cmp,  # 11 RegExp
+  zero,        # 12 MaxKey
+]
+
+# Compare two variables of any type
+cmp = (a, b) ->
+  at = type_order(a)
+  bt = type_order(b)
+  return -1 if at < bt
+  return  1 if at > bt
+  cmp_type[at](a, b)
+
 Compare = (c) ->
   (a,b) ->
     for k, v of c
+      x = a[k] || null
+      y = b[k] || null
       mod = if v < 0 then -1 else 1
-      return -1 * mod if a[k] < b[k]
-      return  1 * mod if a[k] > b[k]
+      r = cmp(x, y)
+      return r if r
     return 0
 
 u1 =
@@ -205,7 +254,7 @@ u1 =
         c = Compare(upd.$sort)
         l.sort(c)
       # $slice 	limit the size of updated arrays.
-      l.splice($upd.$slice, l.length)
+      l.splice(0, l.length + upd.$slice)
     else
       l.push(upd)
 
