@@ -65,17 +65,19 @@ s1[k] = v for k,v of {
         x = d
         for s in k.split('.')
           x = x[s] if x?
-        if v instanceof RegExp
+
+        if v instanceof RegExp # Regular expresion
           m = v.test(x)
         else if v instanceof Object
-          if Object.keys(v)[0][0] == '$'
+          if Object.keys(v)[0][0] == '$' # Operators
             m = s2.$m(x, v)
-          else
+          else # Object
             m = (JSON.stringify(v) == JSON.stringify(x))
-        else if Array.isArray(x)
+        else if Array.isArray(x) # Array
           m = v in x
-        else
+        else # Scalar
           m = (x == v)
+
       return false unless m
     true
 }
