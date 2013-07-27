@@ -1,4 +1,26 @@
 
+dotGet = (d, k) ->
+  x = d
+  for s in k.split('.')
+    x = x[s] if x?
+  x
+
+dotSet = (d, k, v) ->
+  x = d
+  for s in k.split('.')
+    x[s] = {} unless x[s]?
+    p = x
+    x = x[s]
+  p[s] = v
+
+dotDel = (d, k) ->
+  x = d
+  for s in k.split('.')
+    x[s] = {} unless x[s]?
+    p = x
+    x = x[s]
+  delete p[s]
+
 s1 = {}
 s2 =
   # [comparison]
@@ -62,9 +84,7 @@ s1[k] = v for k,v of {
       if k of @ # $or, $and, etc.
         m = @[k](d,v)
       else # Regular query
-        x = d
-        for s in k.split('.')
-          x = x[s] if x?
+        x = dotGet(d, k)
 
         if v instanceof RegExp # Regular expresion
           m = v.test(x)
@@ -85,13 +105,73 @@ s1[k] = v for k,v of {
 Query = (q) ->
   (d) -> s1.$m(d,q)
 
+Compare = (c) ->
+  (a,b) ->
+    for k, v of c
+      mod = if v < 0 then -1 else 1
+      return -1 * mod if a[k] < b[k]
+      return  1 * mod if a[k] > b[k]
+    return 0
+
 u1 =
-  $set: (upd, old) -> upd
+  # [fields]
+  $inc: (d, k, upd) -> dotSet(d, k, upd + dotGet(d, k)) # Increments the value of the field by the specified amount.
+  $rename: (d, k, upd) -> # Renames a field.
+    dotSet(d, upd, dotGet(d, k))
+    dotDel(d, k)
+  $setOnInsert: (d, k, upd, insert) ->	# Sets the value of a field upon documentation creation during an upsert. Has no effect on update operations that modify existing documents.
+    return unless insert
+    dotSet(d, k, upd)
+  $set: (d, k, upd) -> dotSet(d, k, upd) #Sets the value of a field in an existing document.
+  $unset: (d, k, upd) -> dotDel(d, k) # Removes the specified field from an existing document.
+  # [Array][operators]
+  # TODO: $ 	Acts as a placeholder to update the first element that matches the query condition in an update.
+  $addToSet: (d, k, upd) -> # Adds elements to an existing array only if they do not already exist in the set.
+    l = dotGet(d, k)
+    # $each 	append multiple items for array updates.
+    if upd.$each?
+      for x in upd.$each
+        l.push(x) unless upd in l
+    else
+      l.push(upd) unless upd in l
+
+  $pop: (d, k, upd) -> # Removes the first or last item of an array.
+    l = dotGet(d, k)
+    if upd < 0
+      l.shift()
+    else
+      l.pop()
+
+  $pullAll: (d, k, upd) -> #Removes multiple values from an array.
+    l = dotGet(d, k)
+    for i in [0...l.length]
+      if l[i] in upd
+        l.splice(i, 1)
+        i -= 1
+
+  $pull: (d, k, upd) -> # Removes items from an array that match a query statement.
+    l = dotGet(d, k)
+    q = Query(upd)
+    for i in [0...l.length]
+      if q(l[i])
+        l.splice(i, 1)
+        i -= 1
+
+  $push: (d, k, upd) -> # Adds an item to an array.
+    l = dotGet(d, k)
+    # $each 	append multiple items for array updates.
+    if upd.$each?
+      for x in upd.$each
+        l.push(x)
+      # $sort 	reorder documents stored in an array.
+      if upd.$sort?
+        c = Compare(upd.$sort)
+        l.sort(c)
+      # $slice 	limit the size of updated arrays.
+      l.splice($upd.$slice, l.length)
+    else
+      l.push(upd)
 
 Update = (op, update, data) ->
   for k, v of update
-    x = data
-    for s in k.split('.')
-      du = x
-      x = x[s] if x?
-    du[s] = u1[op](v, x)
+    u1[op](data, k, v, false)
