@@ -23,59 +23,84 @@ dotDel = (d, k) ->
 
 s1 = {}
 s2 =
-  # [comparison]
-  $gt:  (v,q) -> v >  q # Matches values that are greater than the value specified in the query.
-  $gte: (v,q) -> v >= q # Matches values that are equal to or greater than the value specified in the query.
-  $in:  (v,q) -> v in q # Matches any of the values that exist in an array specified in the query.
-  $lt:  (v,q) -> v <  q # Matches values that are less than the value specified in the query.
-  $lte: (v,q) -> v <= q # Matches values that are less than or equal to the value specified in the query.
-  $ne:  (v,q) -> v != q # Matches all values that are not equal to the value specified in the query.
-  $nin: (v,q) -> v not in q # Matches values that do not exist in an array specified to the query.
-  $all: (v,q) -> # Matches arrays that contain all elements specified in the query.
+  ## [comparison]
+  # Matches values that are greater than the value specified in the query.
+  $gt:  (v,q) -> v >  q
+  # Matches values that are equal to or greater than the value specified in the
+  #  query.
+  $gte: (v,q) -> v >= q
+  # Matches any of the values that exist in an array specified in the query.
+  $in:  (v,q) -> v in q
+  # Matches values that are less than the value specified in the query.
+  $lt:  (v,q) -> v <  q
+  # Matches values that are less than or equal to the value specified in the
+  #  query.
+  $lte: (v,q) -> v <= q
+  # Matches all values that are not equal to the value specified in the query.
+  $ne:  (v,q) -> v != q
+  # Matches values that do not exist in an array specified to the query.
+  $nin: (v,q) -> v not in q
+  # Matches arrays that contain all elements specified in the query.
+  $all: (v,q) ->
     for x in v
       return false if x not in q
     true
 
-  # [element]
-  $exists: (v,q) -> v? == q # Matches documents that have the specified field.
-  $mod: (v,q) -> (v % q[0]) == q[1]# Performs a modulo operation on the value of a field and selects documents with a specified result.
-  #TODO: $type: () # Selects documents if a field is of the specified type.
+  ## [element]
+  # Matches documents that have the specified field.
+  $exists: (v,q) -> v? == q
+  # Performs a modulo operation on the value of a field and selects documents
+  #  with a specified result.
+  $mod: (v,q) -> (v % q[0]) == q[1]
+  # TODO: $type: Selects documents if a field is of the specified type.
 
-  # [array]
-  $size: (v,q) -> v.length == q # Selects documents if the array field is a specified size.
-  $elemMatch: (v,q) -> # Selects documents if element in the array field matches all the specified $elemMatch condition.
+  ## [array]
+  # Selects documents if the array field is a specified size.
+  $size: (v,q) -> v.length == q
+  # Selects documents if element in the array field matches all the specified
+  #  $elemMatch condition.
+  $elemMatch: (v,q) ->
     for x in v
       return true if s1.$m(x,q)
     false
 
+  # Match
   $m: (v,q) ->
     for op, qv of q
       return false unless @[op](v,qv)
     return true
 
-  # [javascript]
+  ## [javascript]
   # TODO: $where: # Matches documents that satisfy a JavaScript expression.
   # TODO: $regex: # Selects documents where values match a specified regular expression.
 
-  # [geospatial]
+  ## [geospatial]
   # TODO: $geoWithin: # Selects geometries within a bounding GeoJSON geometry.
   # TODO: $geoIntersects: # Selects geometries that intersect with a GeoJSON geometry.
   # TODO: $near: # Returns geospatial objects in proximity to a point.
   # TODO: $nearSphere: # Returns geospatial objects in proximity to a point on a sphere.
 
 s1[k] = v for k,v of {
-  # [logical]
-  $or:  (v,q) -> # Joins query clauses with a logical OR returns all documents that match the conditions of either clause.
+  ## [logical]
+  # Joins query clauses with a logical OR returns all documents that match the
+  #  conditions of either clause.
+  $or:  (v,q) ->
     for xq in q
       return true if @$m(v,xq)
     false
-  $and: (v,q) -> # Joins query clauses with a logical AND returns all documents that match the conditions of both clauses.
+  # Joins query clauses with a logical AND returns all documents that match the
+  #  conditions of both clauses.
+  $and: (v,q) ->
     for xq in q
       return false unless @$m(v,xq)
     true
-  $not: (v,q) -> # Inverts the effect of a query expression and returns documents that do not match the query expression.
+  # Inverts the effect of a query expression and returns documents that do not
+  #  match the query expression.
+  $not: (v,q) ->
     return not @$m(v,q)
-  $nor: (v,q) -> # Joins query clauses with a logical NOR returns all documents that fail to match both clauses.
+  # Joins query clauses with a logical NOR returns all documents that fail to
+  #  match both clauses.
+  $nor: (v,q) ->
     for xq in q
       return false if @$m(v,xq)
     true
@@ -114,19 +139,27 @@ Compare = (c) ->
     return 0
 
 u1 =
-  # [fields]
-  $inc: (d, k, upd) -> dotSet(d, k, upd + dotGet(d, k)) # Increments the value of the field by the specified amount.
-  $rename: (d, k, upd) -> # Renames a field.
+  ## [fields]
+  # Increments the value of the field by the specified amount.
+  $inc: (d, k, upd) -> dotSet(d, k, upd + dotGet(d, k))
+  # Renames a field.
+  $rename: (d, k, upd) ->
     dotSet(d, upd, dotGet(d, k))
     dotDel(d, k)
-  $setOnInsert: (d, k, upd, insert) ->	# Sets the value of a field upon documentation creation during an upsert. Has no effect on update operations that modify existing documents.
+  # Sets the value of a field upon documentation creation during an upsert.
+  #  Has no effect on update operations that modify existing documents.
+  $setOnInsert: (d, k, upd, insert) ->
     return unless insert
     dotSet(d, k, upd)
-  $set: (d, k, upd) -> dotSet(d, k, upd) #Sets the value of a field in an existing document.
-  $unset: (d, k, upd) -> dotDel(d, k) # Removes the specified field from an existing document.
+  # Sets the value of a field in an existing document.
+  $set: (d, k, upd) -> dotSet(d, k, upd)
+  # Removes the specified field from an existing document.
+  $unset: (d, k, upd) -> dotDel(d, k)
   # [Array][operators]
-  # TODO: $ 	Acts as a placeholder to update the first element that matches the query condition in an update.
-  $addToSet: (d, k, upd) -> # Adds elements to an existing array only if they do not already exist in the set.
+  # TODO: $: # Acts as a placeholder to update the first element that matches the query condition in an update.
+  # Adds elements to an existing array only if they do not already exist in the
+  #  set.
+  $addToSet: (d, k, upd) ->
     l = dotGet(d, k)
     # $each 	append multiple items for array updates.
     if upd.$each?
@@ -135,21 +168,24 @@ u1 =
     else
       l.push(upd) unless upd in l
 
-  $pop: (d, k, upd) -> # Removes the first or last item of an array.
+  # Removes the first or last item of an array.
+  $pop: (d, k, upd) ->
     l = dotGet(d, k)
     if upd < 0
       l.shift()
     else
       l.pop()
 
-  $pullAll: (d, k, upd) -> #Removes multiple values from an array.
+  # Removes multiple values from an array.
+  $pullAll: (d, k, upd) ->
     l = dotGet(d, k)
     for i in [0...l.length]
       if l[i] in upd
         l.splice(i, 1)
         i -= 1
 
-  $pull: (d, k, upd) -> # Removes items from an array that match a query statement.
+  # Removes items from an array that match a query statement.
+  $pull: (d, k, upd) ->
     l = dotGet(d, k)
     q = Query(upd)
     for i in [0...l.length]
@@ -157,7 +193,8 @@ u1 =
         l.splice(i, 1)
         i -= 1
 
-  $push: (d, k, upd) -> # Adds an item to an array.
+  # Adds an item to an array.
+  $push: (d, k, upd) ->
     l = dotGet(d, k)
     # $each 	append multiple items for array updates.
     if upd.$each?
