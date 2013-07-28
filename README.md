@@ -32,9 +32,9 @@ $.<db name>.<collection name>.
 
 ## Current and planned features
 
-- [x] CRUD
+- [X] CRUD
 - [ ] Indexing.
-- [ ] TodoMVC demo.
+- [X] TodoMVC demo.
 - [ ] Minimized build.
 - [ ] Automatic synchronization with REST server.
 - [ ] Events.
