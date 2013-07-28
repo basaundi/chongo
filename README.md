@@ -26,9 +26,9 @@ For more on the usage look in the `demo` and `test` folders.
 ## Internal behaviour
 
 Each document is stored separately as JSON under a key with the name
-$.<db name>.<collection name>.$<ObjectId>. An index of the documents
+`$.<db name>.<collection name>.$<ObjectId>`. An index of the documents
 in a collection in $natural order is stored under the key
-$.<db name>.<collection name>.
+`$.<db name>.<collection name>`.
 
 ## Current and planned features
 
