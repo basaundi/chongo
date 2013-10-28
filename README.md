@@ -2,6 +2,8 @@
 
 A mongo-like interface to browser [Web Storage](http://dev.w3.org/html5/webstorage/) (localStorage and sessionStorage).
 
+[![HEY CHONGO!](http://i.imgur.com/RXWLcrl.png)](http://www.youtube.com/watch?v=km2Tro4S8hk)
+
 ## Basic usage
 
 ```javascript
