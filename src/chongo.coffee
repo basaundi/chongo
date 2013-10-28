@@ -67,11 +67,11 @@ class Database extends Namespace
 class Connection
   constructor: (@store) ->
     @ns = '$'
-    @data = @get('.local.system.pongo')
-    unless @data? # First time using Pongo
+    @data = @get('.local.system.chongo')
+    unless @data? # First time using Chongo
       @data = {}
       @data.hostname = ObjectId.hostname
-      @set('.local.system.pongo', @data)
+      @set('.local.system.chongo', @data)
 
   db: (db) -> new Database(@, db)
 
