@@ -48,19 +48,19 @@
     });
     return it("can do simple comparisons", function() {
       var C;
-      C = Pongo.Compare({
+      C = Chongo.Compare({
         foo: 1
       });
       expect(C(a, b)).toEqual(1);
       expect(C(b, c)).toEqual(-1);
       expect(C(c, d)).toEqual(1);
       expect(C(d, e)).toEqual(0);
-      C = Pongo.Compare({
+      C = Chongo.Compare({
         bang: -1
       });
       expect(C(a, b)).toEqual(1);
       expect(C(b, c)).toEqual(-1);
-      C = Pongo.Compare({
+      C = Chongo.Compare({
         type: 1,
         qty: -1
       });
@@ -128,19 +128,19 @@
       };
     });
     it("$set s elements", function() {
-      Pongo.Update('$set', {
+      Chongo.Update('$set', {
         'foo': 'z'
       }, a);
-      Pongo.Update('$set', {
+      Chongo.Update('$set', {
         'foo': 'z'
       }, b);
-      Pongo.Update('$set', {
+      Chongo.Update('$set', {
         'foo': 'z'
       }, c);
-      Pongo.Update('$set', {
+      Chongo.Update('$set', {
         'foo': 'z'
       }, d);
-      Pongo.Update('$set', {
+      Chongo.Update('$set', {
         'foo': 'z'
       }, e);
       expect(a.foo).toEqual('z');
@@ -173,7 +173,7 @@
           }
         ]
       };
-      Pongo.Update('$push', {
+      Chongo.Update('$push', {
         quizzes: {
           $each: [
             {
@@ -244,18 +244,18 @@
     });
     it("empty", function() {
       var m;
-      m = Pongo.Query({});
+      m = Chongo.Query({});
       expect(m(a)).toBe(true);
       expect(m(b)).toBe(true);
       expect(m(c)).toBe(true);
-      m = Pongo.Query();
+      m = Chongo.Query();
       expect(m(a)).toBe(true);
       expect(m(b)).toBe(true);
       return expect(m(c)).toBe(true);
     });
     it("scalar equality", function() {
       var m;
-      m = Pongo.Query({
+      m = Chongo.Query({
         'foo': 9
       });
       expect(m(a)).toBe(true);
@@ -264,7 +264,7 @@
     });
     it("with regex", function() {
       var m;
-      m = Pongo.Query({
+      m = Chongo.Query({
         'bar': /^z+$/
       });
       expect(m(a)).toBe(false);
@@ -273,7 +273,7 @@
     });
     it("perform compound queries", function() {
       var m;
-      m = Pongo.Query({
+      m = Chongo.Query({
         'x': 'y',
         'foo': 0
       });
@@ -283,13 +283,13 @@
     });
     it("in arrays", function() {
       var m;
-      m = Pongo.Query({
+      m = Chongo.Query({
         'ding': 4
       });
       expect(m(a)).toBe(true);
       expect(m(b)).toBe(false);
       expect(m(c)).toBe(false);
-      m = Pongo.Query({
+      m = Chongo.Query({
         'ding.1': 3
       });
       expect(m(a)).toBe(false);
@@ -298,7 +298,7 @@
     });
     it("documents", function() {
       var m;
-      m = Pongo.Query({
+      m = Chongo.Query({
         'bang': {
           'foo': 8
         }
@@ -309,7 +309,7 @@
     });
     it("in nested documents", function() {
       var m;
-      m = Pongo.Query({
+      m = Chongo.Query({
         'bang.foo': 8
       });
       expect(m(a)).toBe(true);
@@ -318,7 +318,7 @@
     });
     it("works with $in operator", function() {
       var m;
-      m = Pongo.Query({
+      m = Chongo.Query({
         'bar': {
           '$in': ['xxx', 'zzzz']
         }
@@ -329,7 +329,7 @@
     });
     it("works with $or operator", function() {
       var m;
-      m = Pongo.Query({
+      m = Chongo.Query({
         '$or': [
           {
             'bar': 'xxx'
@@ -344,7 +344,7 @@
     });
     return it("works with complex queries", function() {
       var m;
-      m = Pongo.Query({
+      m = Chongo.Query({
         type: 'food',
         $or: [
           {
@@ -363,7 +363,7 @@
       expect(m(c)).toBe(false);
       expect(m(d)).toBe(true);
       expect(m(e)).toBe(true);
-      m = Pongo.Query({
+      m = Chongo.Query({
         type: 'food',
         $and: [
           {

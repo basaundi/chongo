@@ -5,12 +5,12 @@
     con = null;
     beforeEach(function() {
       sessionStorage.clear();
-      return con = new Pongo.Connection(sessionStorage);
+      return con = new Chongo.Connection(sessionStorage);
     });
     it("should be able to retrieve databases", function() {
       var db;
       db = con.db('mydb');
-      return expect(db.constructor).toEqual(Pongo.Database);
+      return expect(db.constructor).toEqual(Chongo.Database);
     });
     return describe("Database", function() {
       var db;

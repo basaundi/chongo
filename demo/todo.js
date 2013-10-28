@@ -69,7 +69,7 @@ function addTodo(){
 }
 
 function ready(){
-  app.con  = new Pongo.Connection(sessionStorage);
+  app.con  = new Chongo.Connection(sessionStorage);
   app.db   = app.con.db('todos');
   app.col  = app.db.col('todos');
   app.filter = {}

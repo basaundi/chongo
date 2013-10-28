@@ -13,15 +13,15 @@ describe "Compare", ->
     e = {'type': 'food', qty: 254, price: 10.32}
 
   it "can do simple comparisons", ->
-    C = Pongo.Compare({foo: 1})
+    C = Chongo.Compare({foo: 1})
     expect(C(a, b)).toEqual(1)  # 9 > 0
     expect(C(b, c)).toEqual(-1) # 0 < 1
     expect(C(c, d)).toEqual(1)  # 1 > undefined
     expect(C(d, e)).toEqual(0)  # undefined = undefined
-    C = Pongo.Compare({bang: -1})
+    C = Chongo.Compare({bang: -1})
     expect(C(a,b)).toEqual(1)
     expect(C(b,c)).toEqual(-1)
-    C = Pongo.Compare({type: 1, qty: -1})
+    C = Chongo.Compare({type: 1, qty: -1})
     expect(C(c,d)).toEqual(1)
     expect(C(d,e)).toEqual(1)
 
@@ -45,11 +45,11 @@ describe "Update", ->
       ]
 
   it "$set s elements", ->
-    Pongo.Update('$set', {'foo': 'z'}, a)
-    Pongo.Update('$set', {'foo': 'z'}, b)
-    Pongo.Update('$set', {'foo': 'z'}, c)
-    Pongo.Update('$set', {'foo': 'z'}, d)
-    Pongo.Update('$set', {'foo': 'z'}, e)
+    Chongo.Update('$set', {'foo': 'z'}, a)
+    Chongo.Update('$set', {'foo': 'z'}, b)
+    Chongo.Update('$set', {'foo': 'z'}, c)
+    Chongo.Update('$set', {'foo': 'z'}, d)
+    Chongo.Update('$set', {'foo': 'z'}, e)
     expect(a.foo).toEqual('z')
     expect(b.foo).toEqual('z')
     expect(c.foo).toEqual('z')
@@ -67,7 +67,7 @@ describe "Update", ->
         { "id" : 3, "score" : 8 },
         { "id" : 2, "score" : 9 }
       ]
-    Pongo.Update('$push', {
+    Chongo.Update('$push', {
       quizzes: {
         $each: [
           { id: 3, score: 8 },
@@ -92,76 +92,76 @@ describe "Query", ->
     e = {'type': 'food', qty: 254, price: 10.32}
 
   it "empty", ->
-    m = Pongo.Query({})
+    m = Chongo.Query({})
     expect(m(a)).toBe(true)
     expect(m(b)).toBe(true)
     expect(m(c)).toBe(true)
-    m = Pongo.Query()
+    m = Chongo.Query()
     expect(m(a)).toBe(true)
     expect(m(b)).toBe(true)
     expect(m(c)).toBe(true)
 
   it "scalar equality", ->
-    m = Pongo.Query('foo': 9)
+    m = Chongo.Query('foo': 9)
     expect(m(a)).toBe(true)
     expect(m(b)).toBe(false)
     expect(m(c)).toBe(false)
 
   it "with regex", ->
-    m = Pongo.Query('bar': /^z+$/)
+    m = Chongo.Query('bar': /^z+$/)
     expect(m(a)).toBe(false)
     expect(m(b)).toBe(false)
     expect(m(c)).toBe(true)
 
   it "perform compound queries", ->
-    m = Pongo.Query('x': 'y', 'foo': 0)
+    m = Chongo.Query('x': 'y', 'foo': 0)
     expect(m(a)).toBe(false)
     expect(m(b)).toBe(true)
     expect(m(c)).toBe(false)
 
   it "in arrays", ->
-    m = Pongo.Query('ding': 4)
+    m = Chongo.Query('ding': 4)
     expect(m(a)).toBe(true)
     expect(m(b)).toBe(false)
     expect(m(c)).toBe(false)
-    m = Pongo.Query('ding.1': 3)
+    m = Chongo.Query('ding.1': 3)
     expect(m(a)).toBe(false)
     expect(m(b)).toBe(true)
     expect(m(c)).toBe(true)
 
   it "documents", ->
-    m = Pongo.Query('bang': {'foo': 8})
+    m = Chongo.Query('bang': {'foo': 8})
     expect(m(a)).toBe(true)
     expect(m(b)).toBe(false)
     expect(m(c)).toBe(false)
 
   it "in nested documents", ->
-    m = Pongo.Query('bang.foo': 8)
+    m = Chongo.Query('bang.foo': 8)
     expect(m(a)).toBe(true)
     expect(m(b)).toBe(false)
     expect(m(c)).toBe(true)
 
   it "works with $in operator", ->
-    m = Pongo.Query('bar': {'$in': ['xxx', 'zzzz']})
+    m = Chongo.Query('bar': {'$in': ['xxx', 'zzzz']})
     expect(m(a)).toBe(true)
     expect(m(b)).toBe(false)
     expect(m(c)).toBe(true)
 
   it "works with $or operator", ->
-    m = Pongo.Query('$or': [{'bar': 'xxx'},{'bar': 'zzzz'}])
+    m = Chongo.Query('$or': [{'bar': 'xxx'},{'bar': 'zzzz'}])
     expect(m(a)).toBe(true)
     expect(m(b)).toBe(false)
     expect(m(c)).toBe(true)
 
   it "works with complex queries", ->
-    m = Pongo.Query({ type: 'food', $or: [{ qty:   { $gt: 100  }},
+    m = Chongo.Query({ type: 'food', $or: [{ qty:   { $gt: 100  }},
                                           { price: { $lt: 9.95 }}]})
     expect(m(a)).toBe(false)
     expect(m(b)).toBe(false)
     expect(m(c)).toBe(false)
     expect(m(d)).toBe(true)
     expect(m(e)).toBe(true)
-    m = Pongo.Query({ type: 'food', $and: [{ qty:   { $gt: 100  }},
+    m = Chongo.Query({ type: 'food', $and: [{ qty:   { $gt: 100  }},
                                           { price: { $lt: 9.95 }}]})
     expect(m(a)).toBe(false)
     expect(m(b)).toBe(false)

@@ -85,7 +85,7 @@ class Connection
   del: (reg) ->
     @store.removeItem(@ns+reg)
 
-Pongo = @Pongo =
+Chongo = @Chongo =
   'Connection': Connection
   'Database': Database
   'Collection': Collection
@@ -93,4 +93,4 @@ Pongo = @Pongo =
   'Compare': Compare
   'Query': Query
 
-module?.exports = Pongo
+module?.exports = Chongo

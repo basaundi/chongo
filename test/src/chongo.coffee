@@ -3,11 +3,11 @@ describe "Connection", ->
 
   beforeEach () ->
     sessionStorage.clear()
-    con = new Pongo.Connection(sessionStorage)
+    con = new Chongo.Connection(sessionStorage)
 
   it "should be able to retrieve databases", ->
     db = con.db('mydb')
-    expect(db.constructor).toEqual(Pongo.Database)
+    expect(db.constructor).toEqual(Chongo.Database)
 
   describe "Database", ->
     db = null
