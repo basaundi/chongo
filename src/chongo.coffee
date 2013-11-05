@@ -22,7 +22,10 @@ class Collection extends Namespace
   findOne: (query) ->
     return new Document(@, query).data if typeof query == "string"
     cur = new Cursor(@, @data.sub, query)
-    cur.next()
+    try
+      cur.next()
+    catch
+      return null
 
   count: (query) -> @find(query).count()
 
@@ -114,5 +117,6 @@ Chongo = @Chongo =
   'Update': Update
   'Compare': Compare
   'Query': Query
+  'ObjectId': ObjectId
 
 module?.exports = Chongo
