@@ -20,10 +20,20 @@ class Collection extends Namespace
     new Cursor(@, @data.sub, query)
 
   findOne: (query) ->
+    return new Document(@, query).data if typeof query == "string"
     cur = new Cursor(@, @data.sub, query)
     cur.next()
 
   count: (query) -> @find(query).count()
+
+  save: (to_save) ->
+    type_name = Object.prototype.toString.call(to_save)
+    if type_name isnt '[object Object]'
+      throw new TypeError("cannot save object of type #{type_name}")
+    if '_id' not in to_save
+      return @insert(to_save)
+    @update({'_id': to_save['_id']}, to_save, True)
+    to_save['id'] || null
 
   insert: (doc) ->
     if Array.isArray(doc)
@@ -61,8 +71,20 @@ class Collection extends Namespace
 
   count: -> @data.sub.length
 
+  col: (col) ->
+    throw TypeError if typeof col != "string"
+    throw RangeError if not /^[^.$\0]+(\.[^.$\0]+)*$/.test(col)
+    return new Collection(@, col)
+
+  drop: Collection::destroy
+
 class Database extends Namespace
-  col: (col) -> new Collection(@, col)
+  col: (col) ->
+    c = Collection::col.call(@ ,col)
+    @data.sub.push(col)
+    return c
+
+  getCollectionNames: -> @data.sub
 
 class Connection
   constructor: (@store) ->
