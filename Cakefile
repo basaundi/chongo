@@ -1,7 +1,7 @@
 {print} = require 'util'
 {spawn} = require 'child_process'
 
-sources = 'query object_id cursor chongo'
+sources = 'query projection object_id cursor chongo'
 sources = ('src/' + x + '.coffee' for x in sources.split(' '))
 
 task 'build', 'Build lib/ from src/', ->

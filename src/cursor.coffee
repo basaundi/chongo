@@ -1,17 +1,19 @@
 
 class Cursor
-  constructor: (@col, @index, @query) ->
+  constructor: (@col, @index, @query, @projection) ->
     @doc = null
     @started = false
     @done = false
     @i = 0
     @n = 0
+    @query = {_id: @query} if typeof @query == "string"
 
   load: () ->
     # TODO: select best index
     # TODO: skip
     @started = true
     @match = Query(@query)
+    @project = if @projection? then Projection(@projection) else (x) -> x
 
   fetch: ->
     @load() unless @started
@@ -45,7 +47,7 @@ class Cursor
     throw new Error("No more data.") unless @doc?
     doc = @doc.data
     @doc = null
-    doc
+    @project(doc)
 
   toArray: ->
     a = []

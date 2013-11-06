@@ -16,12 +16,11 @@ class Document extends Namespace
     @load() unless @data?
 
 class Collection extends Namespace
-  find: (query) ->
-    new Cursor(@, @data.sub, query)
+  find: (criteria, projection) ->
+    new Cursor(@, @data.sub, criteria, projection)
 
-  findOne: (query) ->
-    return new Document(@, query).data if typeof query == "string"
-    cur = new Cursor(@, @data.sub, query)
+  findOne: (criteria, projection) ->
+    cur = new Cursor(@, @data.sub, criteria, projection)
     try
       cur.next()
     catch
