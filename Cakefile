@@ -34,3 +34,11 @@ task 'watch', 'Watch src/ for changes', ->
     process.stderr.write data.toString()
   coffee_t.stdout.on 'data', (data) ->
     print data.toString()
+
+task 'minify', 'Minify the resulting application file after build', ->
+  minifier = spawn 'closure', ['--js', 'lib/chongo.js', '--js_output_file', 'lib/chongo.production.js']
+  minifier.stderr.on 'data', (data) ->
+    process.stderr.write data.toString()
+  minifier.stdout.on 'data', (data) ->
+    print data.toString()
+    
